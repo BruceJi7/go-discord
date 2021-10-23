@@ -24,16 +24,17 @@ func main() {
 
 	dg.AddHandler(ready)
 	dg.AddHandler(message)
+	dg.AddHandler(discordMessageReactionAdd)
 	// Looks like ready is an expected name, and so this line registers a function to be performed on ready.
 
-	dg.Identify.Intents = discordgo.IntentsGuilds | discordgo.IntentsGuildMessages | discordgo.IntentsGuildVoiceStates
+	dg.Identify.Intents = discordgo.IntentsGuilds | discordgo.IntentsGuildMessages | discordgo.IntentsGuildVoiceStates | discordgo.IntentsGuildMessageReactions
 
 	err = dg.Open() // Open the websocket
 	raiseOrPrint(err, "Bot is running. CTRL-C to exit.")
 
 	// Not sure what this stuff is doing. Concurrency?
 	sc := make(chan os.Signal, 1)
-	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
+	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
 	<-sc
 
 	// Cleanly close down the Discord session.
@@ -68,6 +69,14 @@ func message(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	fmt.Println(msg.Content)
 
+}
+
+func discordMessageReactionAdd(s *discordgo.Session, m *discordgo.MessageReactionAdd) {
+	if m.UserID == s.State.User.ID {
+		return
+	}
+
+	fmt.Println(m.MessageID)
 }
 
 // // Get channel by name
