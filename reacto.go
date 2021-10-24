@@ -15,8 +15,6 @@ import (
 
 const PREFIX = "!"
 
-// const KEY string = "Njk3NzgwMDAwNTg5MzQ4ODY2.Xo8Qug.xUbrZGy8fco3dQJzy8m-qcd42tY"
-
 func main() {
 
 	dg, err := discordgo.New("Bot " + config.Key)
@@ -24,11 +22,10 @@ func main() {
 
 	dg.AddHandler(ready)
 	dg.AddHandler(message)
-	dg.AddHandler(discordMessageReactionAdd)
+	dg.AddHandler(reaction)
 	// Looks like ready is an expected name, and so this line registers a function to be performed on ready.
 
-	dg.Identify.Intents = discordgo.IntentsGuilds | discordgo.IntentsGuildMessages | discordgo.IntentsGuildVoiceStates | discordgo.IntentsGuildMessageReactions
-
+	dg.Identify.Intents = discordgo.IntentsGuildMessages | discordgo.IntentsAllWithoutPrivileged
 	err = dg.Open() // Open the websocket
 	raiseOrPrint(err, "Bot is running. CTRL-C to exit.")
 
@@ -65,13 +62,23 @@ func message(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	if strings.HasPrefix(msg.Content, PREFIX) {
 		fmt.Println("COMMAND")
+
+		if strings.Contains(msg.Content, "clear") {
+			// This is redundant because it only clears the message that you use to tell it to clear something
+			// But it is a proof of concept lol
+			err := s.ChannelMessageDelete(msg.ChannelID, msg.ID)
+			if err != nil {
+				fmt.Println(err)
+			}
+		}
+
 	}
 
 	fmt.Println(msg.Content)
 
 }
 
-func discordMessageReactionAdd(s *discordgo.Session, m *discordgo.MessageReactionAdd) {
+func reaction(s *discordgo.Session, m *discordgo.MessageReactionAdd) {
 	if m.UserID == s.State.User.ID {
 		return
 	}
