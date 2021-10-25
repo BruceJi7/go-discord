@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"syscall"
 
@@ -14,6 +15,11 @@ import (
 )
 
 const PREFIX = "!"
+
+type BotCommand struct {
+	command     string
+	instruction []string
+}
 
 func main() {
 
@@ -41,7 +47,6 @@ func main() {
 
 func ready(s *discordgo.Session, event *discordgo.Ready) {
 
-	// Set the playing status.
 	channels, _ := s.GuildChannels(config.Guild)
 
 	ch, err := getChannelByName(&channels, "general")
@@ -61,18 +66,26 @@ func message(s *discordgo.Session, m *discordgo.MessageCreate) {
 	msg := m.Message
 
 	if strings.HasPrefix(msg.Content, PREFIX) {
-		fmt.Println("COMMAND")
+		c := parseCommand(msg.Content)
 
-		if strings.Contains(msg.Content, "clear") {
+		if strings.Contains(c.command, "!clear") {
 			// This is redundant because it only clears the message that you use to tell it to clear something
 			// But it is a proof of concept lol
 
-			messages, _ := s.ChannelMessages(m.ChannelID, 20, msg.ID, "", "")
-			for _, message := range messages {
-				fmt.Println(message)
+			fmt.Println(c.command)
+			howMany, _ := strconv.Atoi(c.instruction[0])
+
+			fmt.Println(howMany)
+
+			messages, _ := s.ChannelMessages(m.ChannelID, howMany, msg.ID, "", "")
+
+			var messageIDs []string
+
+			for _, m := range messages {
+				messageIDs = append(messageIDs, m.ID)
 			}
 
-			err := s.ChannelMessageDelete(msg.ChannelID, msg.ID)
+			err := s.ChannelMessagesBulkDelete(msg.ChannelID, messageIDs)
 			if err != nil {
 				fmt.Println(err)
 			}
@@ -80,7 +93,7 @@ func message(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	}
 
-	fmt.Println(msg.Content)
+	// fmt.Println(msg.Content)
 
 }
 
@@ -90,6 +103,11 @@ func reaction(s *discordgo.Session, m *discordgo.MessageReactionAdd) {
 	}
 
 	fmt.Println(m.MessageID)
+}
+
+func parseCommand(commandString string) BotCommand {
+	instructions := strings.Split((commandString), " ")
+	return BotCommand{command: instructions[0], instruction: instructions[1:]}
 }
 
 // // Get channel by name
