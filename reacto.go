@@ -57,7 +57,7 @@ func message(s *discordgo.Session, m *discordgo.MessageCreate) {
 		return
 	}
 
-	// channel := event.ChannelID
+	// channel := m.ChannelID
 	msg := m.Message
 
 	if strings.HasPrefix(msg.Content, PREFIX) {
@@ -66,6 +66,12 @@ func message(s *discordgo.Session, m *discordgo.MessageCreate) {
 		if strings.Contains(msg.Content, "clear") {
 			// This is redundant because it only clears the message that you use to tell it to clear something
 			// But it is a proof of concept lol
+
+			messages, _ := s.ChannelMessages(m.ChannelID, 20, msg.ID, "", "")
+			for _, message := range messages {
+				fmt.Println(message)
+			}
+
 			err := s.ChannelMessageDelete(msg.ChannelID, msg.ID)
 			if err != nil {
 				fmt.Println(err)
