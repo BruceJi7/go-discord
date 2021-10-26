@@ -12,7 +12,7 @@ const Guild = 'your guild ID code'
 
 ### Code tips:
 
-Event Handlers:
+# Event Handlers:
 
 ```go
 
@@ -24,7 +24,7 @@ func onReady...
 
 The AddHandler method isn't expecting particular names, but the variables you give to the function passed in dictate what event that handler does.
 
-Erasing a message:
+# Erasing a message:
 
 ```go
 err := s.ChannelMessageDelete(msg.ChannelID, msg.ID)
@@ -36,7 +36,7 @@ err := s.ChannelMessageDelete(msg.ChannelID, msg.ID)
 
 This will erase one message.
 
-Capturing a range of messages
+# Capturing a range of messages
 
 ```go
 messages, _ := s.ChannelMessages(m.ChannelID, 20, msg.ID, "", "")
