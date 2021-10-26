@@ -25,7 +25,6 @@ func main() {
 	dg.AddHandler(onReady)
 	dg.AddHandler(onMessage)
 	dg.AddHandler(onReaction)
-	// Looks like ready is an expected name, and so this line registers a function to be performed on ready.
 
 	dg.Identify.Intents = discordgo.IntentsGuildMessages | discordgo.IntentsAllWithoutPrivileged
 	err = dg.Open() // Open the websocket
@@ -33,7 +32,7 @@ func main() {
 
 	// Not sure what this stuff is doing. Concurrency?
 	sc := make(chan os.Signal, 1)
-	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt, os.Kill)
+	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	<-sc
 
 	// Cleanly close down the Discord session.
