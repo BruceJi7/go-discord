@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"os"
 	"os/signal"
 	"strings"
@@ -15,7 +16,8 @@ import (
 )
 
 const PREFIX = "!"
-const MSG_TO_WATCH = "902547426215358575"
+
+var MSG_TO_WATCH string = ""
 
 func main() {
 
@@ -68,9 +70,6 @@ func onMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 		}
 
 	}
-
-	// fmt.Println(msg.Content)
-
 }
 
 func onReaction(s *discordgo.Session, m *discordgo.MessageReactionAdd) {
@@ -78,7 +77,18 @@ func onReaction(s *discordgo.Session, m *discordgo.MessageReactionAdd) {
 		return
 	}
 
+	emojiUsed := m.Emoji.MessageFormat()
+
+	if emojiUsed == "🔥" {
+		if MSG_TO_WATCH == "" {
+			fmt.Println("MSG TO WATCH was set to ", m.MessageID)
+			MSG_TO_WATCH = m.MessageID
+		}
+	}
+
+	fmt.Println(m.Emoji.APIName())
+
 	if m.MessageID == MSG_TO_WATCH {
-		print("Pretend role given")
+		fmt.Println("Pretend role given")
 	}
 }
