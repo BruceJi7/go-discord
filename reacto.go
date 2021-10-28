@@ -28,7 +28,7 @@ func main() {
 	dg.AddHandler(onMessage)
 	dg.AddHandler(onReaction)
 
-	dg.Identify.Intents = discordgo.IntentsGuildMessages | discordgo.IntentsAllWithoutPrivileged
+	dg.Identify.Intents = discordgo.IntentsGuildMessages | discordgo.IntentsGuildMembers | discordgo.IntentsAllWithoutPrivileged
 	err = dg.Open() // Open the websocket
 	help.RaiseOrPrint(err, "Bot is running. CTRL-C to exit.")
 
@@ -44,7 +44,7 @@ func main() {
 
 func onReady(s *discordgo.Session, event *discordgo.Ready) {
 
-	channels, _ := s.GuildChannels(config.Guild)
+	channels, _ := s.GuildChannels(config.GuildID)
 
 	ch, err := disc.GetChannelByName(&channels, "general")
 	help.RaiseError(err)
@@ -61,12 +61,14 @@ func onMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	// channel := m.ChannelID
 	msg := m.Message
-
 	if strings.HasPrefix(msg.Content, PREFIX) {
 		c := disc.ParseCommand(msg.Content)
 
 		if strings.Contains(c.Command, "!clear") {
 			comm.DeleteMessages(c, s, m)
+		}
+		if strings.Contains(c.Command, "!members") {
+			disc.FetchMember(s, "")
 		}
 
 	}
