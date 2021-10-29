@@ -68,7 +68,9 @@ func onMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 			comm.DeleteMessages(c, s, m)
 		}
 		if strings.Contains(c.Command, "!members") {
-			disc.FetchMember(s, "")
+			member, err := disc.FetchMember(s, m.Author.ID)
+			help.RaiseError(err)
+			disc.IsAdmin(s, member)
 		}
 
 	}

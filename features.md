@@ -7,7 +7,7 @@ With that said, it should have some particular features:
 
 ### Target Features
 
-- Logging to the bot-log channel
+- Logging to the bot-log channel (discordHelpers => SendLog)
 - Command to post the react-for-roles post
 - Print and post to logs when the bot turns on
 - Print a welcome message when someone joins
