@@ -25,14 +25,25 @@ func main() {
 	help.RaiseError(err)
 
 	dg.AddHandler(onReady)
-	dg.AddHandler(onMessage)
-	dg.AddHandler(onReaction)
+	dg.AddHandler(commands)
 
 	dg.Identify.Intents = discordgo.IntentsGuildMessages | discordgo.IntentsGuildMembers | discordgo.IntentsAllWithoutPrivileged
 	err = dg.Open() // Open the websocket
 	help.RaiseOrPrint(err, "Bot is running. CTRL-C to exit.")
 
-	// Not sure what this stuff is doing. Concurrency?
+	command := &discordgo.ApplicationCommand{
+		Name:        "command-name",
+		Type:        discordgo.ChatApplicationCommand,
+		Description: "Slash commands are amazing",
+	}
+
+	commandVal, err := dg.ApplicationCommandCreate(config.AppID, config.GuildID, command)
+	if err != nil {
+		print(err)
+	}
+	print(commandVal)
+
+	// Create channel, hold it open
 	sc := make(chan os.Signal, 1)
 	signal.Notify(sc, syscall.SIGINT, syscall.SIGTERM, os.Interrupt)
 	<-sc
@@ -42,14 +53,15 @@ func main() {
 
 }
 
-func onReady(s *discordgo.Session, event *discordgo.Ready) {
+func onReady(s *discordgo.Session, _ *discordgo.Ready) {
 
 	channels, _ := s.GuildChannels(config.GuildID)
 
 	ch, err := disc.GetChannelByName(&channels, "general")
 	help.RaiseError(err)
-
 	s.ChannelMessageSend(ch.ID, "SUP")
+
+	disc.SendLog(s, "init")
 
 }
 
@@ -94,5 +106,29 @@ func onReaction(s *discordgo.Session, m *discordgo.MessageReactionAdd) {
 
 	if m.MessageID == MSG_TO_WATCH {
 		fmt.Println("Pretend role given")
+	}
+}
+
+func commands(s *discordgo.Session, i *discordgo.InteractionCreate) {
+	if i.Type != discordgo.InteractionApplicationCommand {
+		return
+	}
+
+	data := i.ApplicationCommandData()
+	switch data.Options[0].Name {
+	case "command-name":
+		fmt.Println("yes")
+	case "subcommand-group":
+		data := data.Options[0]
+		switch data.Options[0].Name {
+		case "subcommand":
+			// Do something
+		}
+	case "subcommand":
+		data := data.Options[0]
+		switch data.Options[0].Name {
+		case "subcommand":
+			// Do something
+		}
 	}
 }

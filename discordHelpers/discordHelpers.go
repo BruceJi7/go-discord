@@ -23,8 +23,11 @@ func ParseCommand(commandString string) BotCommand {
 func SendLog(s *discordgo.Session, logMessage string) {
 
 	channels, _ := s.GuildChannels(config.GuildID)
-	ch, err := GetChannelByName(&channels, config.LogChannelName)
+	ch, err := GetChannelByName(&channels, "bot-logs")
+
 	if err != nil {
+		panic(err)
+	} else {
 		s.ChannelMessageSend(ch.ID, logMessage)
 	}
 }
