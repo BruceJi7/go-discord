@@ -22,26 +22,52 @@ var MSG_TO_WATCH string = ""
 func main() {
 
 	dg, err := discordgo.New("Bot " + config.Key)
-	help.RaiseError(err)
+	if err != nil {
+		fmt.Println("Error starting up:")
+		fmt.Println(err)
+	}
 
 	dg.AddHandler(onReady)
 	dg.AddHandler(commands)
 
 	dg.Identify.Intents = discordgo.IntentsGuildMessages | discordgo.IntentsGuildMembers | discordgo.IntentsAllWithoutPrivileged
 	err = dg.Open() // Open the websocket
-	help.RaiseOrPrint(err, "Bot is running. CTRL-C to exit.")
+	if err != nil {
+		fmt.Println("Error initialising websocket:")
+		fmt.Println(err)
+	}
 
 	command := &discordgo.ApplicationCommand{
 		Name:        "command-name",
 		Type:        discordgo.ChatApplicationCommand,
-		Description: "Slash commands are amazing",
+		Description: "This is command description",
+		Options: []*discordgo.ApplicationCommandOption{
+			{
+				Name:        "subcommand",
+				Type:        discordgo.ApplicationCommandOptionSubCommand,
+				Description: "This is subcommand description",
+			},
+			{
+				Name:        "subcommand-group",
+				Type:        discordgo.ApplicationCommandOptionSubCommandGroup,
+				Description: "This is subcommand group description",
+				Options: []*discordgo.ApplicationCommandOption{
+					{
+						Name:        "subcommand",
+						Type:        discordgo.ApplicationCommandOptionSubCommand,
+						Description: "This is subcommand description",
+					},
+				},
+			},
+		},
 	}
-
-	commandVal, err := dg.ApplicationCommandCreate(config.AppID, config.GuildID, command)
+	_, err = dg.ApplicationCommandCreate(config.AppID, config.GuildID, command)
 	if err != nil {
-		print(err)
+		fmt.Println("Error creating command:")
+		fmt.Println(err)
+	} else {
+		fmt.Println("Command added")
 	}
-	print(commandVal)
 
 	// Create channel, hold it open
 	sc := make(chan os.Signal, 1)
@@ -116,19 +142,29 @@ func commands(s *discordgo.Session, i *discordgo.InteractionCreate) {
 
 	data := i.ApplicationCommandData()
 	switch data.Options[0].Name {
-	case "command-name":
-		fmt.Println("yes")
+	case "command":
+		// Do something
 	case "subcommand-group":
 		data := data.Options[0]
 		switch data.Options[0].Name {
 		case "subcommand":
 			// Do something
+			fmt.Println("subcommand 1")
+			err := s.InteractionRespond(i.Interaction,
+				&discordgo.InteractionResponse{
+					Type: discordgo.InteractionResponseChannelMessageWithSource,
+					Data: &discordgo.InteractionResponseData{TTS: true, Content: "A reply"},
+				})
+
+			fmt.Println("subcommand error")
+			fmt.Println(err)
 		}
 	case "subcommand":
 		data := data.Options[0]
 		switch data.Options[0].Name {
 		case "subcommand":
 			// Do something
+			fmt.Println("subcommand 2")
 		}
 	}
 }
