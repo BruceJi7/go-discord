@@ -7,15 +7,20 @@ With that said, it should have some particular features:
 
 ### Target Features
 
+#### Important Features
+
 - Logging to the bot-log channel (discordHelpers => SendLog)
 - Command to post the react-for-roles post
 - Print and post to logs when the bot turns on
 - Print a welcome message when someone joins
-- Get ping (not really necessary)
 - Force a log post (admin)
 - Erase messages (admin)
-- Post a stackoverflow search url to a channel
 - Respond to reactions and assign or remove roles
+
+#### Other Features
+
+- Post a stackoverflow search url to a channel
+- Get ping (not really necessary)
 
 ### Stretch Features
 

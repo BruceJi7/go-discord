@@ -37,33 +37,54 @@ func main() {
 		fmt.Println(err)
 	}
 
-	command := &discordgo.ApplicationCommand{
-		Name:        "command-name",
+	// command := &discordgo.ApplicationCommand{
+	// 	Name:        "command-name",
+	// 	Type:        discordgo.ChatApplicationCommand,
+	// 	Description: "This is command description",
+	// 	Options: []*discordgo.ApplicationCommandOption{
+	// 		{
+	// 			Name:        "subcommand",
+	// 			Type:        discordgo.ApplicationCommandOptionSubCommand,
+	// 			Description: "This is subcommand description",
+	// 		},
+	// 		{
+	// 			Name:        "subcommand-group",
+	// 			Type:        discordgo.ApplicationCommandOptionSubCommandGroup,
+	// 			Description: "This is subcommand group description",
+	// 			Options: []*discordgo.ApplicationCommandOption{
+	// 				{
+	// 					Name:        "subcommand",
+	// 					Type:        discordgo.ApplicationCommandOptionSubCommand,
+	// 					Description: "This is subcommand description",
+	// 				},
+	// 			},
+	// 		},
+	// 	},
+	// }
+
+	eraseCommand := &discordgo.ApplicationCommand{
+		Name:        "erase",
 		Type:        discordgo.ChatApplicationCommand,
-		Description: "This is command description",
+		Description: "Erase messages in a channel",
 		Options: []*discordgo.ApplicationCommandOption{
 			{
-				Name:        "subcommand",
-				Type:        discordgo.ApplicationCommandOptionSubCommand,
-				Description: "This is subcommand description",
-			},
-			{
-				Name:        "subcommand-group",
-				Type:        discordgo.ApplicationCommandOptionSubCommandGroup,
-				Description: "This is subcommand group description",
-				Options: []*discordgo.ApplicationCommandOption{
-					{
-						Name:        "subcommand",
-						Type:        discordgo.ApplicationCommandOptionSubCommand,
-						Description: "This is subcommand description",
-					},
-				},
+				Name:        "multiple",
+				Type:        discordgo.ApplicationCommandOptionInteger,
+				Description: "Specify amount to erase",
 			},
 		},
 	}
-	_, err = dg.ApplicationCommandCreate(config.AppID, config.GuildID, command)
+
+	// _, err = dg.ApplicationCommandCreate(config.AppID, config.GuildID, command)
+	// if err != nil {
+	// 	fmt.Println("Error creating command:")
+	// 	fmt.Println(err)
+	// } else {
+	// 	fmt.Println("Command added")
+	// }
+	_, err = dg.ApplicationCommandCreate(config.AppID, config.GuildID, eraseCommand)
 	if err != nil {
-		fmt.Println("Error creating command:")
+		fmt.Println("Error adding erase command:")
 		fmt.Println(err)
 	} else {
 		fmt.Println("Command added")
@@ -102,9 +123,6 @@ func onMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if strings.HasPrefix(msg.Content, PREFIX) {
 		c := disc.ParseCommand(msg.Content)
 
-		if strings.Contains(c.Command, "!clear") {
-			comm.DeleteMessages(c, s, m)
-		}
 		if strings.Contains(c.Command, "!members") {
 			member, err := disc.FetchMember(s, m.Author.ID)
 			help.RaiseError(err)
@@ -141,30 +159,86 @@ func commands(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	}
 
 	data := i.ApplicationCommandData()
-	switch data.Options[0].Name {
-	case "command":
-		// Do something
-	case "subcommand-group":
-		data := data.Options[0]
-		switch data.Options[0].Name {
-		case "subcommand":
-			// Do something
-			fmt.Println("subcommand 1")
+	options := data.Options
+
+	switch data.Name {
+	case "erase":
+
+		if len(options) == 0 {
+			// Triggered single erase mode
+			mID := i.Interaction.ID
+			mChannel := i.ChannelID
 			err := s.InteractionRespond(i.Interaction,
 				&discordgo.InteractionResponse{
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
-					Data: &discordgo.InteractionResponseData{TTS: true, Content: "A reply"},
+					Data: &discordgo.InteractionResponseData{Content: "Messages Erased", Flags: 1 << 6},
 				})
 
-			fmt.Println("subcommand error")
-			fmt.Println(err)
-		}
-	case "subcommand":
-		data := data.Options[0]
-		switch data.Options[0].Name {
-		case "subcommand":
-			// Do something
-			fmt.Println("subcommand 2")
+			if err != nil {
+				fmt.Println("Error on command Erase")
+				fmt.Println(err)
+			} else {
+				fmt.Println("Trigger Erase Command")
+				comm.DeleteMessages(2, s, mChannel, mID)
+			}
+
+		} else {
+			// Multiple erase mode:
+			eraseAmount := options[0].Value
+			fmt.Println(eraseAmount)
+			err := s.InteractionRespond(i.Interaction,
+				&discordgo.InteractionResponse{
+					Type: discordgo.InteractionResponseChannelMessageWithSource,
+					Data: &discordgo.InteractionResponseData{Content: "Messages Erased", Flags: 1 << 6},
+				})
+			if err != nil {
+				fmt.Println("Error on command Erase")
+				fmt.Println(err)
+			} else {
+				fmt.Println("Trigger Erase Command")
+				fmt.Println(options)
+			}
+
 		}
 	}
+
+	// switch data.Options[0].Name {
+	// case "command":
+	// 	// Do something
+	// case "subcommand-group":
+	// 	data := data.Options[0]
+	// 	switch data.Options[0].Name {
+	// 	case "subcommand":
+	// 		// Do something
+	// 		fmt.Println("subcommand 1")
+	// 		err := s.InteractionRespond(i.Interaction,
+	// 			&discordgo.InteractionResponse{
+	// 				Type: discordgo.InteractionResponseChannelMessageWithSource,
+	// 				Data: &discordgo.InteractionResponseData{TTS: true, Content: "A reply"},
+	// 			})
+
+	// 		fmt.Println("subcommand error")
+	// 		fmt.Println(err)
+	// 	}
+	// case "subcommand":
+	// 	data := data.Options[0]
+	// 	switch data.Options[0].Name {
+	// 	case "subcommand":
+	// 		// Do something
+	// 		fmt.Println("subcommand 2")
+	// 	}
+	// case "erase":
+	// 	err := s.InteractionRespond(i.Interaction,
+	// 		&discordgo.InteractionResponse{
+	// 			Type: discordgo.InteractionResponsePong,
+	// 		})
+
+	// 	if err != nil {
+	// 		fmt.Println("Error on command Erase")
+	// 		fmt.Println(err)
+	// 	} else {
+	// 		fmt.Println("Trigger Erase Command")
+	// 	}
+
+	// }
 }
