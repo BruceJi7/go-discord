@@ -101,15 +101,7 @@ func main() {
 }
 
 func onReady(s *discordgo.Session, _ *discordgo.Ready) {
-
-	channels, _ := s.GuildChannels(config.GuildID)
-
-	ch, err := disc.GetChannelByName(&channels, "general")
-	help.RaiseError(err)
-	s.ChannelMessageSend(ch.ID, "SUP")
-
 	disc.SendLog(s, "init")
-
 }
 
 func onMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
@@ -161,13 +153,16 @@ func commands(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	data := i.ApplicationCommandData()
 	options := data.Options
 
+	interactionID := i.Interaction.ID
+	interactionChannel, _ := disc.GetChannelByIDFromSession(s, i.ChannelID)
+	interactionMember := i.Member
+
 	switch data.Name {
 	case "erase":
 
 		if len(options) == 0 {
 			// Triggered single erase mode
-			mID := i.Interaction.ID
-			mChannel := i.ChannelID
+
 			err := s.InteractionRespond(i.Interaction,
 				&discordgo.InteractionResponse{
 					Type: discordgo.InteractionResponseChannelMessageWithSource,
@@ -179,12 +174,14 @@ func commands(s *discordgo.Session, i *discordgo.InteractionCreate) {
 				fmt.Println(err)
 			} else {
 				fmt.Println("Trigger Erase Command")
-				comm.DeleteMessages(2, s, mChannel, mID)
+				comm.DeleteMessages(1, s, interactionChannel.ID, interactionID)
+				logmessage := fmt.Sprintf("Single Erase: User %s | channel %s", interactionMember.User.Username, interactionChannel.Name)
+				disc.SendLog(s, logmessage)
 			}
 
 		} else {
 			// Multiple erase mode:
-			eraseAmount := options[0].Value
+			eraseAmount := options[0].IntValue()
 			fmt.Println(eraseAmount)
 			err := s.InteractionRespond(i.Interaction,
 				&discordgo.InteractionResponse{
@@ -195,8 +192,10 @@ func commands(s *discordgo.Session, i *discordgo.InteractionCreate) {
 				fmt.Println("Error on command Erase")
 				fmt.Println(err)
 			} else {
-				fmt.Println("Trigger Erase Command")
-				fmt.Println(options)
+				fmt.Println("Trigger Multiple Erase Command: ", eraseAmount)
+				comm.DeleteMessages(int(eraseAmount), s, interactionChannel.ID, interactionID)
+				logmessage := fmt.Sprintf("Multiple Erase: User %s | %d messages | channel %s", interactionMember.User.Username, eraseAmount, interactionChannel.Name)
+				disc.SendLog(s, logmessage)
 			}
 
 		}

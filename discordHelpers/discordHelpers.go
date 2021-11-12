@@ -42,6 +42,17 @@ func GetChannelByName(chans *[]*discordgo.Channel, name string) (c *discordgo.Ch
 	return (*chans)[0], errors.New("channel not found")
 }
 
+func GetChannelByIDFromSession(s *discordgo.Session, cID string) (c *discordgo.Channel, err error) {
+
+	channels, _ := s.GuildChannels(config.GuildID)
+	for _, c := range channels {
+		if c.ID == cID {
+			return c, nil
+		}
+	}
+	return channels[0], errors.New("channel not found")
+}
+
 func FetchMember(s *discordgo.Session, userDetails string) (member *discordgo.Member, err error) {
 	guildMembers, err := s.GuildMembers(config.GuildID, "", 1000)
 
