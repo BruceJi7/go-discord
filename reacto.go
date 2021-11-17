@@ -4,13 +4,11 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
-	"strings"
 	"syscall"
 
 	comm "tobio/reacto/commands"
 	"tobio/reacto/config"
 	disc "tobio/reacto/discordHelpers"
-	help "tobio/reacto/helpers"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -28,7 +26,7 @@ func main() {
 	}
 
 	dg.AddHandler(onReady)
-	dg.AddHandler(commands)
+	dg.AddHandler(adminCommands)
 
 	dg.Identify.Intents = discordgo.IntentsGuildMessages | discordgo.IntentsGuildMembers | discordgo.IntentsAllWithoutPrivileged
 	err = dg.Open() // Open the websocket
@@ -36,31 +34,6 @@ func main() {
 		fmt.Println("Error initialising websocket:")
 		fmt.Println(err)
 	}
-
-	// command := &discordgo.ApplicationCommand{
-	// 	Name:        "command-name",
-	// 	Type:        discordgo.ChatApplicationCommand,
-	// 	Description: "This is command description",
-	// 	Options: []*discordgo.ApplicationCommandOption{
-	// 		{
-	// 			Name:        "subcommand",
-	// 			Type:        discordgo.ApplicationCommandOptionSubCommand,
-	// 			Description: "This is subcommand description",
-	// 		},
-	// 		{
-	// 			Name:        "subcommand-group",
-	// 			Type:        discordgo.ApplicationCommandOptionSubCommandGroup,
-	// 			Description: "This is subcommand group description",
-	// 			Options: []*discordgo.ApplicationCommandOption{
-	// 				{
-	// 					Name:        "subcommand",
-	// 					Type:        discordgo.ApplicationCommandOptionSubCommand,
-	// 					Description: "This is subcommand description",
-	// 				},
-	// 			},
-	// 		},
-	// 	},
-	// }
 
 	eraseCommand := &discordgo.ApplicationCommand{
 		Name:        "erase",
@@ -75,19 +48,33 @@ func main() {
 		},
 	}
 
-	// _, err = dg.ApplicationCommandCreate(config.AppID, config.GuildID, command)
-	// if err != nil {
-	// 	fmt.Println("Error creating command:")
-	// 	fmt.Println(err)
-	// } else {
-	// 	fmt.Println("Command added")
-	// }
+	forceLogCommand := &discordgo.ApplicationCommand{
+		Name:        "forcelog",
+		Type:        discordgo.ChatApplicationCommand,
+		Description: "Force Bot to Log Something",
+		Options: []*discordgo.ApplicationCommandOption{
+			{
+				Name:        "message",
+				Type:        discordgo.ApplicationCommandOptionString,
+				Description: "Specify log message",
+				Required:    true,
+			},
+		},
+	}
+
 	_, err = dg.ApplicationCommandCreate(config.AppID, config.GuildID, eraseCommand)
 	if err != nil {
 		fmt.Println("Error adding erase command:")
 		fmt.Println(err)
 	} else {
-		fmt.Println("Command added")
+		fmt.Println("Erase command added")
+	}
+	_, err = dg.ApplicationCommandCreate(config.AppID, config.GuildID, forceLogCommand)
+	if err != nil {
+		fmt.Println("Error adding forcelog command:")
+		fmt.Println(err)
+	} else {
+		fmt.Println("Forcelog command added")
 	}
 
 	// Create channel, hold it open
@@ -102,26 +89,6 @@ func main() {
 
 func onReady(s *discordgo.Session, _ *discordgo.Ready) {
 	disc.SendLog(s, "init")
-}
-
-func onMessage(s *discordgo.Session, m *discordgo.MessageCreate) {
-
-	if m.Author.ID == s.State.User.ID {
-		return
-	}
-
-	// channel := m.ChannelID
-	msg := m.Message
-	if strings.HasPrefix(msg.Content, PREFIX) {
-		c := disc.ParseCommand(msg.Content)
-
-		if strings.Contains(c.Command, "!members") {
-			member, err := disc.FetchMember(s, m.Author.ID)
-			help.RaiseError(err)
-			disc.IsAdmin(s, member)
-		}
-
-	}
 }
 
 func onReaction(s *discordgo.Session, m *discordgo.MessageReactionAdd) {
@@ -145,7 +112,7 @@ func onReaction(s *discordgo.Session, m *discordgo.MessageReactionAdd) {
 	}
 }
 
-func commands(s *discordgo.Session, i *discordgo.InteractionCreate) {
+func adminCommands(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	if i.Type != discordgo.InteractionApplicationCommand {
 		return
 	}
@@ -156,6 +123,16 @@ func commands(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	interactionID := i.Interaction.ID
 	interactionChannel, _ := disc.GetChannelByIDFromSession(s, i.ChannelID)
 	interactionMember := i.Member
+
+	interactionMemberIsAdmin, err := disc.IsAdmin(s, config.GuildID, interactionMember.User.ID)
+	if err != nil {
+		fmt.Println("Error on evaluating admin permissions:")
+		fmt.Println(err)
+	} else {
+		if !interactionMemberIsAdmin {
+			return
+		}
+	}
 
 	switch data.Name {
 	case "erase":
@@ -199,45 +176,23 @@ func commands(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			}
 
 		}
+
+	case "forcelog":
+		fmt.Println("Force Log")
+
+		err := s.InteractionRespond(i.Interaction,
+			&discordgo.InteractionResponse{
+				Type: discordgo.InteractionResponseChannelMessageWithSource,
+				Data: &discordgo.InteractionResponseData{Content: "Log made in log channel", Flags: 1 << 6},
+			})
+
+		if err != nil {
+			fmt.Println("Error on command Erase")
+			fmt.Println(err)
+		} else {
+			logString := options[0].StringValue()
+			disc.SendLog(s, logString)
+			fmt.Println("Force log: ", logString)
+		}
 	}
-
-	// switch data.Options[0].Name {
-	// case "command":
-	// 	// Do something
-	// case "subcommand-group":
-	// 	data := data.Options[0]
-	// 	switch data.Options[0].Name {
-	// 	case "subcommand":
-	// 		// Do something
-	// 		fmt.Println("subcommand 1")
-	// 		err := s.InteractionRespond(i.Interaction,
-	// 			&discordgo.InteractionResponse{
-	// 				Type: discordgo.InteractionResponseChannelMessageWithSource,
-	// 				Data: &discordgo.InteractionResponseData{TTS: true, Content: "A reply"},
-	// 			})
-
-	// 		fmt.Println("subcommand error")
-	// 		fmt.Println(err)
-	// 	}
-	// case "subcommand":
-	// 	data := data.Options[0]
-	// 	switch data.Options[0].Name {
-	// 	case "subcommand":
-	// 		// Do something
-	// 		fmt.Println("subcommand 2")
-	// 	}
-	// case "erase":
-	// 	err := s.InteractionRespond(i.Interaction,
-	// 		&discordgo.InteractionResponse{
-	// 			Type: discordgo.InteractionResponsePong,
-	// 		})
-
-	// 	if err != nil {
-	// 		fmt.Println("Error on command Erase")
-	// 		fmt.Println(err)
-	// 	} else {
-	// 		fmt.Println("Trigger Erase Command")
-	// 	}
-
-	// }
 }

@@ -9,12 +9,12 @@ With that said, it should have some particular features:
 
 #### Important Features
 
-- Logging to the bot-log channel (discordHelpers => SendLog)
+- Logging to the bot-log channel (discordHelpers => SendLog) O
 - Command to post the react-for-roles post
-- Print and post to logs when the bot turns on
+- Print and post to logs when the bot turns on O
 - Print a welcome message when someone joins
 - Force a log post (admin)
-- Erase messages (admin)
+- Erase messages (admin) O
 - Respond to reactions and assign or remove roles
 
 #### Other Features

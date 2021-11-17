@@ -2,7 +2,6 @@ package discordHelpers
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 	"tobio/reacto/config"
 	"tobio/reacto/helpers"
@@ -65,17 +64,29 @@ func FetchMember(s *discordgo.Session, userDetails string) (member *discordgo.Me
 	return guildMembers[0], errors.New("member not found")
 }
 
-func IsAdmin(s *discordgo.Session, m *discordgo.Member) bool {
+func IsAdmin(s *discordgo.Session, guildID string, userID string) (bool, error) {
+	return memberHasPermission(s, guildID, userID, discordgo.PermissionAdministrator)
+}
 
-	guildRoles, _ := s.GuildRoles(config.GuildID)
-
-	for _, role := range guildRoles {
-		fmt.Println(role.Permissions)
+func memberHasPermission(s *discordgo.Session, guildID string, userID string, permission int64) (bool, error) {
+	member, err := s.State.Member(guildID, userID)
+	if err != nil {
+		if member, err = s.GuildMember(guildID, userID); err != nil {
+			return false, err
+		}
 	}
 
-	for _, role := range m.Roles {
-		fmt.Println(role)
+	// Iterate through the role IDs stored in member.Roles
+	// to check permissions
+	for _, roleID := range member.Roles {
+		role, err := s.State.Role(guildID, roleID)
+		if err != nil {
+			return false, err
+		}
+		if role.Permissions&permission != 0 {
+			return true, nil
+		}
 	}
 
-	return false
+	return false, nil
 }
