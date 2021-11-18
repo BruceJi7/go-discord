@@ -6,12 +6,12 @@ import (
 	"github.com/bwmarrin/discordgo"
 )
 
-func DeleteMessages(howMany int, s *discordgo.Session, channel string, messageID string) {
+func DeleteMessages(howMany int, s *discordgo.Session, channel string, messageID string) error {
 
 	messages, err := s.ChannelMessages(channel, howMany, messageID, "", "")
 	if err != nil {
 		fmt.Println("Error getting messages to delete")
-		fmt.Println(err)
+		return err
 	}
 	// fmt.Println(messages)
 	var messageIDs []string
@@ -24,6 +24,8 @@ func DeleteMessages(howMany int, s *discordgo.Session, channel string, messageID
 	err = s.ChannelMessagesBulkDelete(channel, messageIDs)
 	// s.ChannelMessageDelete(m.ChannelID, m.Message.ID)
 	if err != nil {
-		fmt.Println(err)
+		return err
 	}
+
+	return nil
 }

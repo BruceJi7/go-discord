@@ -2,22 +2,29 @@ package discordHelpers
 
 import (
 	"errors"
-	"strings"
 	"tobio/reacto/config"
 	"tobio/reacto/helpers"
 
 	"github.com/bwmarrin/discordgo"
 )
 
-type BotCommand struct {
-	Command     string
-	Instruction []string
+type LogPrefixes struct {
+	Error      string
+	Forcelog   string
+	EraseOne   string
+	EraseMulti string
 }
 
-func ParseCommand(commandString string) BotCommand {
-	instructions := strings.Split((commandString), " ")
-	return BotCommand{Command: instructions[0], Instruction: instructions[1:]}
+func NewLogPrefixes() LogPrefixes {
+	L := LogPrefixes{}
+	L.Error = "[ERROR] "
+	L.Forcelog = "[FORCELOG] "
+	L.EraseOne = "[ERASE SINGLE] "
+	L.EraseMulti = "[ERASE MULTI] "
+	return L
 }
+
+var Log = NewLogPrefixes()
 
 func SendLog(s *discordgo.Session, logMessage string) {
 

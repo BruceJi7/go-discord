@@ -17,6 +17,8 @@ const PREFIX = "!"
 
 var MSG_TO_WATCH string = ""
 
+var Log = disc.NewLogPrefixes()
+
 func main() {
 
 	dg, err := discordgo.New("Bot " + config.Key)
@@ -147,13 +149,20 @@ func adminCommands(s *discordgo.Session, i *discordgo.InteractionCreate) {
 				})
 
 			if err != nil {
-				fmt.Println("Error on command Erase")
+				fmt.Println("Error responding to command Erase")
 				fmt.Println(err)
 			} else {
 				fmt.Println("Trigger Erase Command")
-				comm.DeleteMessages(1, s, interactionChannel.ID, interactionID)
-				logmessage := fmt.Sprintf("Single Erase: User %s | channel %s", interactionMember.User.Username, interactionChannel.Name)
-				disc.SendLog(s, logmessage)
+				deleteErr := comm.DeleteMessages(1, s, interactionChannel.ID, interactionID)
+				if deleteErr != nil {
+					logmessage := fmt.Sprintf(Log.Error+Log.EraseOne+"User %s | channel %s | %s", interactionMember.User.Username, interactionChannel.Name, deleteErr)
+					disc.SendLog(s, logmessage)
+					fmt.Println("Error deleting one message")
+					fmt.Println(deleteErr)
+				} else {
+					logmessage := fmt.Sprintf(Log.EraseOne+"User %s | channel %s", interactionMember.User.Username, interactionChannel.Name)
+					disc.SendLog(s, logmessage)
+				}
 			}
 
 		} else {
@@ -166,13 +175,21 @@ func adminCommands(s *discordgo.Session, i *discordgo.InteractionCreate) {
 					Data: &discordgo.InteractionResponseData{Content: "Messages Erased", Flags: 1 << 6},
 				})
 			if err != nil {
-				fmt.Println("Error on command Erase")
+				fmt.Println("Error responding to command Erase")
 				fmt.Println(err)
 			} else {
 				fmt.Println("Trigger Multiple Erase Command: ", eraseAmount)
-				comm.DeleteMessages(int(eraseAmount), s, interactionChannel.ID, interactionID)
-				logmessage := fmt.Sprintf("Multiple Erase: User %s | %d messages | channel %s", interactionMember.User.Username, eraseAmount, interactionChannel.Name)
-				disc.SendLog(s, logmessage)
+				deleteErr := comm.DeleteMessages(int(eraseAmount), s, interactionChannel.ID, interactionID)
+				if deleteErr != nil {
+					logmessage := fmt.Sprintf(Log.Error+Log.EraseMulti+"User %s | channel %s | %s", interactionMember.User.Username, interactionChannel.Name, deleteErr)
+					disc.SendLog(s, logmessage)
+					fmt.Println("Error deleting messages")
+					fmt.Println(deleteErr)
+				} else {
+					logmessage := fmt.Sprintf(Log.EraseMulti+"User %s | %d messages | channel %s", interactionMember.User.Username, eraseAmount, interactionChannel.Name)
+					disc.SendLog(s, logmessage)
+				}
+
 			}
 
 		}
@@ -187,11 +204,12 @@ func adminCommands(s *discordgo.Session, i *discordgo.InteractionCreate) {
 			})
 
 		if err != nil {
-			fmt.Println("Error on command Erase")
+			fmt.Println("Error responding to command Forcelog")
 			fmt.Println(err)
 		} else {
 			logString := options[0].StringValue()
-			disc.SendLog(s, logString)
+			logmessage := fmt.Sprintf(Log.Forcelog+"By User %s: %s", interactionMember.User.Username, logString)
+			disc.SendLog(s, logmessage)
 			fmt.Println("Force log: ", logString)
 		}
 	}
