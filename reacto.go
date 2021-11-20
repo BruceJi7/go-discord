@@ -7,7 +7,7 @@ import (
 	"syscall"
 
 	"tobio/reacto/config"
-	eventhandlers "tobio/reacto/eventHandlers"
+	"tobio/reacto/eventHandlers"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -28,10 +28,10 @@ func main() {
 	}
 
 	//Add all event handlers
-	eventhandlers.AddEventHandlers(dg)
+	eventHandlers.AddEventHandlers(dg)
 
 	// Initialise slash commands
-	eventhandlers.CreateCommands(dg)
+	eventHandlers.CreateCommands(dg)
 
 	// Create channel, hold it open
 	sc := make(chan os.Signal, 1)

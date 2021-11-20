@@ -2,8 +2,8 @@ package discordHelpers
 
 import (
 	"errors"
+	"fmt"
 	"tobio/reacto/config"
-	"tobio/reacto/helpers"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -62,7 +62,10 @@ func GetChannelByIDFromSession(s *discordgo.Session, cID string) (c *discordgo.C
 func FetchMember(s *discordgo.Session, userDetails string) (member *discordgo.Member, err error) {
 	guildMembers, err := s.GuildMembers(config.GuildID, "", 1000)
 
-	helpers.RaiseError(err)
+	if err != nil {
+		fmt.Println("Error finding member")
+		fmt.Println(err)
+	}
 	for _, member := range guildMembers {
 		if member.User.ID == userDetails {
 			return member, nil

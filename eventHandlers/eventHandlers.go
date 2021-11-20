@@ -1,4 +1,4 @@
-package eventhandlers
+package eventHandlers
 
 import (
 	"fmt"
@@ -7,7 +7,7 @@ import (
 
 	"tobio/reacto/config"
 	"tobio/reacto/eventHandlers/commands"
-	"tobio/reacto/eventHandlers/commands/commandhandlers"
+	"tobio/reacto/eventHandlers/commands/commandHandlers"
 	"tobio/reacto/eventHandlers/events"
 )
 
@@ -16,7 +16,7 @@ func AddEventHandlers(dg *discordgo.Session) {
 	dg.AddHandler(events.OnReady)
 	dg.AddHandler(events.OnNewMember)
 	dg.AddHandler(events.OnReaction)
-	dg.AddHandler(commandhandlers.AdminCommands)
+	dg.AddHandler(commandHandlers.AdminCommands)
 
 }
 
