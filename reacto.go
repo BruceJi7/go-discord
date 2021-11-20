@@ -8,7 +8,7 @@ import (
 	"syscall"
 	"time"
 
-	comm "tobio/reacto/commands"
+	comm "tobio/reacto/commands/actions"
 	"tobio/reacto/config"
 	"tobio/reacto/constant"
 	disc "tobio/reacto/discordHelpers"
