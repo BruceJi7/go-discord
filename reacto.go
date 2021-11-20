@@ -6,9 +6,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"tobio/reacto/commands"
-	"tobio/reacto/commands/handlers"
 	"tobio/reacto/config"
+	eventhandlers "tobio/reacto/eventHandlers"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -21,11 +20,6 @@ func main() {
 		fmt.Println(err)
 	}
 
-	dg.AddHandler(handlers.OnReady)
-	dg.AddHandler(handlers.OnNewMember)
-	dg.AddHandler(handlers.AdminCommands)
-	dg.AddHandler(handlers.OnReaction)
-
 	dg.Identify.Intents = discordgo.IntentsGuildMessages | discordgo.IntentsGuildMembers | discordgo.IntentsAllWithoutPrivileged
 	err = dg.Open() // Open the websocket
 	if err != nil {
@@ -33,20 +27,11 @@ func main() {
 		fmt.Println(err)
 	}
 
-	_, err = dg.ApplicationCommandCreate(config.AppID, config.GuildID, commands.EraseCommand)
-	if err != nil {
-		fmt.Println("Error adding erase command:")
-		fmt.Println(err)
-	} else {
-		fmt.Println("Erase command added")
-	}
-	_, err = dg.ApplicationCommandCreate(config.AppID, config.GuildID, commands.ForceLogCommand)
-	if err != nil {
-		fmt.Println("Error adding forcelog command:")
-		fmt.Println(err)
-	} else {
-		fmt.Println("Forcelog command added")
-	}
+	//Add all event handlers
+	eventhandlers.AddEventHandlers(dg)
+
+	// Initialise slash commands
+	eventhandlers.CreateCommands(dg)
 
 	// Create channel, hold it open
 	sc := make(chan os.Signal, 1)

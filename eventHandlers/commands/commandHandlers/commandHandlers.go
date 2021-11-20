@@ -1,10 +1,10 @@
-package handlers
+package commandhandlers
 
 import (
 	"fmt"
-	"tobio/reacto/commands/handlers/erase"
 	"tobio/reacto/config"
 	disc "tobio/reacto/discordHelpers"
+	"tobio/reacto/eventHandlers/commands/commandHandlers/erase"
 
 	"github.com/bwmarrin/discordgo"
 )

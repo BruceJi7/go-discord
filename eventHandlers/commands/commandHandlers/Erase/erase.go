@@ -3,7 +3,6 @@ package erase
 import (
 	"fmt"
 
-	act "tobio/reacto/commands/actions"
 	disc "tobio/reacto/discordHelpers"
 
 	"github.com/bwmarrin/discordgo"
@@ -22,7 +21,7 @@ func SingleErase(s *discordgo.Session, i *discordgo.InteractionCreate, interacti
 		fmt.Println(err)
 	} else {
 		fmt.Println("Trigger Erase Command")
-		deleteErr := act.DeleteMessages(1, s, interactionChannel.ID, interactionID)
+		deleteErr := DeleteMessages(1, s, interactionChannel.ID, interactionID)
 		if deleteErr != nil {
 			logmessage := fmt.Sprintf(disc.Log.Error+disc.Log.EraseOne+"User %s | channel %s | %s", interactionMember.User.Username, interactionChannel.Name, deleteErr)
 			disc.SendLog(s, logmessage)
@@ -50,7 +49,7 @@ func MultiErase(s *discordgo.Session, i *discordgo.InteractionCreate, options []
 		fmt.Println(err)
 	} else {
 		fmt.Println("Trigger Multiple Erase Command: ", eraseAmount)
-		deleteErr := act.DeleteMessages(int(eraseAmount), s, interactionChannel.ID, interactionID)
+		deleteErr := DeleteMessages(int(eraseAmount), s, interactionChannel.ID, interactionID)
 		if deleteErr != nil {
 			logmessage := fmt.Sprintf(disc.Log.Error+disc.Log.EraseMulti+"User %s | channel %s | %s", interactionMember.User.Username, interactionChannel.Name, deleteErr)
 			disc.SendLog(s, logmessage)
@@ -62,4 +61,27 @@ func MultiErase(s *discordgo.Session, i *discordgo.InteractionCreate, options []
 		}
 
 	}
+}
+
+func DeleteMessages(howMany int, s *discordgo.Session, channel string, messageID string) error {
+
+	messages, err := s.ChannelMessages(channel, howMany, messageID, "", "")
+	if err != nil {
+		fmt.Println("Error getting messages to delete")
+		return err
+	}
+	// fmt.Println(messages)
+	var messageIDs []string
+
+	for _, m := range messages {
+		messageIDs = append(messageIDs, m.ID)
+	}
+	messageIDs = append(messageIDs, messageID)
+
+	err = s.ChannelMessagesBulkDelete(channel, messageIDs)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
