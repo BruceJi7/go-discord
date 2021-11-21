@@ -28,8 +28,7 @@ var Log = NewLogPrefixes()
 
 func SendLog(s *discordgo.Session, logMessage string) {
 
-	channels, _ := s.GuildChannels(config.GuildID)
-	ch, err := GetChannelByName(&channels, "bot-logs")
+	ch, err := GetChannelByName(s, "bot-logs")
 
 	if err != nil {
 		panic(err)
@@ -39,16 +38,17 @@ func SendLog(s *discordgo.Session, logMessage string) {
 }
 
 // // Get channel by name
-func GetChannelByName(chans *[]*discordgo.Channel, name string) (c *discordgo.Channel, err error) {
-	for _, c := range *chans {
+func GetChannelByName(s *discordgo.Session, name string) (c *discordgo.Channel, err error) {
+	channels, _ := s.GuildChannels(config.GuildID)
+	for _, c := range channels {
 		if c.Name == name {
 			return c, nil
 		}
 	}
-	return (*chans)[0], errors.New("channel not found")
+	return channels[0], errors.New("channel not found")
 }
 
-func GetChannelByIDFromSession(s *discordgo.Session, cID string) (c *discordgo.Channel, err error) {
+func GetChannelByID(s *discordgo.Session, cID string) (c *discordgo.Channel, err error) {
 
 	channels, _ := s.GuildChannels(config.GuildID)
 	for _, c := range channels {

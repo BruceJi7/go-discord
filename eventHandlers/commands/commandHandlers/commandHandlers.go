@@ -18,7 +18,7 @@ func AdminCommands(s *discordgo.Session, i *discordgo.InteractionCreate) {
 	options := data.Options
 
 	interactionID := i.Interaction.ID
-	interactionChannel, _ := disc.GetChannelByIDFromSession(s, i.ChannelID)
+	interactionChannel, _ := disc.GetChannelByID(s, i.ChannelID)
 	interactionMember := i.Member
 
 	interactionMemberIsAdmin, err := disc.IsAdmin(s, config.GuildID, interactionMember.User.ID)

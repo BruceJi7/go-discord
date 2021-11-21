@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"math/rand"
 	"time"
-	"tobio/reacto/config"
 	"tobio/reacto/constant"
 	disc "tobio/reacto/discordHelpers"
 
@@ -34,8 +33,7 @@ func OnNewMember(s *discordgo.Session, memberJoinEvent *discordgo.GuildMemberAdd
 
 	botWelcomeScript := fmt.Sprintf("%s, %s! %s introduce yourself, tell us your coding story.\n %s check out the react-for-roles channel and let us know where you're based!\n %s", greeting, newUserName, suggestion, secondSuggestion, closing)
 
-	channels, _ := s.GuildChannels(config.GuildID)
-	welcomeChannel, err := disc.GetChannelByName(&channels, "off-topic")
+	welcomeChannel, err := disc.GetChannelByName(s, "off-topic")
 	if err != nil {
 		fmt.Println("Error finding off-topic channel")
 		fmt.Println(err)
