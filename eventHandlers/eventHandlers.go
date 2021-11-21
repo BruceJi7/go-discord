@@ -15,7 +15,9 @@ func AddEventHandlers(dg *discordgo.Session) {
 
 	dg.AddHandler(events.OnReady)
 	dg.AddHandler(events.OnNewMember)
-	dg.AddHandler(events.OnReaction)
+	dg.AddHandler(events.OnReactionAdded)
+	dg.AddHandler(events.OnReactionRemoved)
+
 	dg.AddHandler(commandHandlers.AdminCommands)
 
 }

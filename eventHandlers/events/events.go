@@ -6,6 +6,7 @@ import (
 	"time"
 	"tobio/reacto/constant"
 	disc "tobio/reacto/discordHelpers"
+	"tobio/reacto/eventHandlers/events/onReaction"
 
 	"github.com/bwmarrin/discordgo"
 )
@@ -42,23 +43,19 @@ func OnNewMember(s *discordgo.Session, memberJoinEvent *discordgo.GuildMemberAdd
 	}
 }
 
-func OnReaction(s *discordgo.Session, m *discordgo.MessageReactionAdd) {
+func OnReactionAdded(s *discordgo.Session, m *discordgo.MessageReactionAdd) {
 	if m.UserID == s.State.User.ID {
 		return
+	} else {
+		onReaction.ParseReactionAdded(s, m)
 	}
 
-	emojiUsed := m.Emoji.MessageFormat()
-
-	if emojiUsed == "🔥" {
-		if MSG_TO_WATCH == "" {
-			fmt.Println("MSG TO WATCH was set to ", m.MessageID)
-			MSG_TO_WATCH = m.MessageID
-		}
+}
+func OnReactionRemoved(s *discordgo.Session, m *discordgo.MessageReactionRemove) {
+	if m.UserID == s.State.User.ID {
+		return
+	} else {
+		onReaction.ParseReactionRemoved(s, m)
 	}
 
-	fmt.Println(m.Emoji.APIName())
-
-	if m.MessageID == MSG_TO_WATCH {
-		fmt.Println("Pretend role given")
-	}
 }

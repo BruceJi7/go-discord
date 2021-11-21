@@ -9,10 +9,12 @@ import (
 )
 
 type LogPrefixes struct {
-	Error      string
-	Forcelog   string
-	EraseOne   string
-	EraseMulti string
+	Error       string
+	Forcelog    string
+	EraseOne    string
+	EraseMulti  string
+	RoleAdded   string
+	RoleRemoved string
 }
 
 func NewLogPrefixes() LogPrefixes {
@@ -21,6 +23,8 @@ func NewLogPrefixes() LogPrefixes {
 	L.Forcelog = "[FORCELOG] "
 	L.EraseOne = "[ERASE SINGLE] "
 	L.EraseMulti = "[ERASE MULTI] "
+	L.RoleAdded = "[RFR ROLE ADD] "
+	L.RoleRemoved = "[RFR ROLE ADD] "
 	return L
 }
 
@@ -57,6 +61,27 @@ func GetChannelByID(s *discordgo.Session, cID string) (c *discordgo.Channel, err
 		}
 	}
 	return channels[0], errors.New("channel not found")
+}
+
+func GetRoleByName(s *discordgo.Session, roleName string) (role *discordgo.Role, err error) {
+	roles, _ := s.GuildRoles(config.GuildID)
+
+	for _, role := range roles {
+		if role.Name == roleName {
+			return role, nil
+		}
+	}
+	return roles[0], errors.New("role not found")
+}
+func GetRoleByID(s *discordgo.Session, roleID string) (role *discordgo.Role, err error) {
+	roles, _ := s.GuildRoles(config.GuildID)
+
+	for _, role := range roles {
+		if role.ID == roleID {
+			return role, nil
+		}
+	}
+	return roles[0], errors.New("role not found")
 }
 
 func FetchMember(s *discordgo.Session, userDetails string) (member *discordgo.Member, err error) {
