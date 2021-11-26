@@ -9,22 +9,28 @@ import (
 )
 
 type LogPrefixes struct {
-	Error       string
-	Forcelog    string
-	EraseOne    string
-	EraseMulti  string
-	RoleAdded   string
-	RoleRemoved string
+	Init         string
+	Error        string
+	Forcelog     string
+	EraseOne     string
+	EraseMulti   string
+	NewMember    string
+	RoleAdded    string
+	RoleRemoved  string
+	LearningPost string
 }
 
 func NewLogPrefixes() LogPrefixes {
 	L := LogPrefixes{}
+	L.Init = "[INIT] "
 	L.Error = "[ERROR] "
 	L.Forcelog = "[FORCELOG] "
 	L.EraseOne = "[ERASE SINGLE] "
 	L.EraseMulti = "[ERASE MULTI] "
+	L.NewMember = "[NEW MEMBER] "
 	L.RoleAdded = "[RFR ROLE ADD] "
 	L.RoleRemoved = "[RFR ROLE ADD] "
+	L.LearningPost = "[LEARNING RESOURCE] "
 	return L
 }
 
@@ -97,6 +103,15 @@ func FetchMember(s *discordgo.Session, userDetails string) (member *discordgo.Me
 		}
 	}
 	return guildMembers[0], errors.New("member not found")
+}
+
+func MemberNickOrName(member *discordgo.Member) string {
+
+	fmt.Println("Nick: ", member.Nick)
+	if member.Nick == "" {
+		return member.User.Username
+	}
+	return member.Nick
 }
 
 func IsAdmin(s *discordgo.Session, guildID string, userID string) (bool, error) {
