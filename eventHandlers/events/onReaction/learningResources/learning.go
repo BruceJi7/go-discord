@@ -2,6 +2,7 @@ package learningResources
 
 import (
 	"fmt"
+	"tobio/reacto/config"
 	"tobio/reacto/constant"
 
 	"github.com/bwmarrin/discordgo"
@@ -23,7 +24,7 @@ func LearningResourcePost(s *discordgo.Session, m *discordgo.MessageReactionAdd,
 		return
 	}
 
-	if bulbCount >= 5 { // If 5 bulbs (or more)
+	if bulbCount >= config.LearningVoteRequirement { // If x bulbs (or more) (probably 5 lol)
 		messageContents := message.Content
 		s.ChannelMessageSend(learningResourcesChannel.ID, messageContents)
 		s.MessageReactionAdd(learningDiscussionChannel.ID, message.ID, constant.BotProcessedEmoji)
