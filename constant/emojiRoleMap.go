@@ -13,3 +13,6 @@ var RFRRoles = []string{
 	"Busan-Based",
 	"Overseas-Based",
 }
+
+const BotProcessedEmoji = "✅"
+const LearningEmoji = "💡"

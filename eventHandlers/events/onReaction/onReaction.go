@@ -3,7 +3,9 @@ package onReaction
 import (
 	"fmt"
 	"tobio/reacto/config"
+	"tobio/reacto/constant"
 	disc "tobio/reacto/discordHelpers"
+	"tobio/reacto/eventHandlers/events/onReaction/learningResources"
 	"tobio/reacto/eventHandlers/events/onReaction/reactForRole"
 
 	"github.com/bwmarrin/discordgo"
@@ -11,8 +13,6 @@ import (
 
 func ParseReactionAdded(s *discordgo.Session, m *discordgo.MessageReactionAdd) {
 	emojiUsed := m.Emoji.MessageFormat()
-
-	fmt.Println(emojiUsed)
 
 	member, err := disc.FetchMember(s, m.UserID)
 	if err != nil {
@@ -27,21 +27,12 @@ func ParseReactionAdded(s *discordgo.Session, m *discordgo.MessageReactionAdd) {
 		reactForRole.RFRAdd(s, member, emojiUsed)
 	} else {
 		//If not, might be learning-related
-		learningChannel, _ := disc.GetChannelByName(s, "learning-discussion")
-		resourcesChannel, _ := disc.GetChannelByName(s, "learning-resources")
+		learningDiscussionChannel, _ := disc.GetChannelByName(s, "learning-discussion")
+		learningResourcesChannel, _ := disc.GetChannelByName(s, "learning-resources")
 
-		if m.ChannelID == learningChannel.ID && emojiUsed == "💡" {
+		if m.ChannelID == learningDiscussionChannel.ID && emojiUsed == constant.LearningEmoji {
 
-			message, err := s.ChannelMessage(learningChannel.ID, m.MessageID)
-			if err != nil {
-				fmt.Println("Whilst parsing reaction added")
-				fmt.Println("Whilst handling learning-discussion reaction")
-				fmt.Println("Error finding message")
-				fmt.Println(err)
-				return
-			}
-			fmt.Println(resourcesChannel.ID)
-			fmt.Println(message.ChannelID)
+			learningResources.LearningResourcePost(s, m, learningDiscussionChannel, learningResourcesChannel)
 			// TODO - count the amount of reactions
 			// If over 5, copy the message over to learning-resources
 

@@ -21,17 +21,18 @@ func main() {
 	}
 
 	dg.Identify.Intents = discordgo.IntentsGuildMessages | discordgo.IntentsGuildMembers | discordgo.IntentsAllWithoutPrivileged
-	err = dg.Open() // Open the websocket
-	if err != nil {
-		fmt.Println("Error initialising websocket:")
-		fmt.Println(err)
-	}
 
 	//Add all event handlers
 	eventHandlers.AddEventHandlers(dg)
 
 	// Initialise slash commands
 	eventHandlers.CreateCommands(dg)
+
+	err = dg.Open() // Open the websocket
+	if err != nil {
+		fmt.Println("Error initialising websocket:")
+		fmt.Println(err)
+	}
 
 	// Create channel, hold it open
 	sc := make(chan os.Signal, 1)
