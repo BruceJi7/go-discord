@@ -33,8 +33,6 @@ func ParseReactionAdded(s *discordgo.Session, m *discordgo.MessageReactionAdd) {
 		if m.ChannelID == learningDiscussionChannel.ID && emojiUsed == constant.LearningEmoji {
 
 			learningResources.LearningResourcePost(s, m, learningDiscussionChannel, learningResourcesChannel)
-			// TODO - count the amount of reactions
-			// If over 5, copy the message over to learning-resources
 
 		}
 
